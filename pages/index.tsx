@@ -9,6 +9,10 @@ import Table from 'react-bootstrap/Table'
 import { formatCurrency } from '../utils/formatCurrency'
 
 export default function MortgageCalculator() {
+  const handleClick = (event: React.SyntheticEvent<Element, Event>) => {
+    event.preventDefault()
+    console.log('calculate button clicked')
+  }
   return (
     <Container>
       <title>Mortgage Calculator Test</title>
@@ -61,7 +65,12 @@ export default function MortgageCalculator() {
               />
               <InputGroup.Text>%</InputGroup.Text>
             </InputGroup>
-            <Button className="w-full" variant="primary" type="submit">
+            <Button
+              className="w-full"
+              variant="primary"
+              type="submit"
+              onClick={handleClick}
+            >
               Calculate
             </Button>
           </Form>
