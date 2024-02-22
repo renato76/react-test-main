@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Container from 'react-bootstrap/Container'
@@ -8,13 +9,56 @@ import Table from 'react-bootstrap/Table'
 
 import { formatCurrency } from '../utils/formatCurrency'
 
+import { calculateMonthlyPayment } from '../utils/MortgageCalculator/calculateRepayment'
+import { calculateTotalRepayment } from '../utils/TotalRepayment/totalRepayment'
+
 export default function MortgageCalculator() {
+  const [propertyPrice, setPropertyPrice] = useState(0)
+  const [deposit, setDeposit] = useState(0)
+  const [interestRate, setInterestRate] = useState(5.25)
+  const [term, setTerm] = useState(15)
+  const [monthlyPayment, setMonthlyPayment] = useState(0)
+  const [totalRepayment, setTotalRepayment] = useState(0)
+  const [capital, setCapital] = useState(0)
+  const [interest, setInterest] = useState(0)
+  const [affordabilityInterestRate, setAffordabilityInterestRate] = useState(0)
+  const [affordabilityCheck, setAffordabilityCheck] = useState(0)
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const monthlyPayment = calculateMonthlyPayment(
+      propertyPrice,
+      deposit,
+      interestRate,
+      term
+    )
+    setMonthlyPayment(monthlyPayment)
+
+    const mortgageAmount = propertyPrice - deposit
+    const total = calculateTotalRepayment(mortgageAmount, interestRate, term)
+    setTotalRepayment(total)
+
+    setCapital(propertyPrice - deposit)
+
+    setInterest(totalRepayment - capital)
+
+    setAffordabilityInterestRate(interestRate + 3)
+
+    const affordability = calculateMonthlyPayment(
+      propertyPrice,
+      deposit,
+      affordabilityInterestRate,
+      term
+    )
+    setAffordabilityCheck(affordability)
+  }
+
   return (
     <Container>
       <title>Mortgage Calculator Test</title>
       <Row className="gap-x-10 pt-3">
         <Col className="border-r" md="auto">
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <Form.Label htmlFor="price">Property Price</Form.Label>
             <InputGroup className="mb-3">
               <InputGroup.Text>£</InputGroup.Text>
@@ -24,6 +68,9 @@ export default function MortgageCalculator() {
                 type="number"
                 className="no-spinner"
                 step="any"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPropertyPrice(Number(e.target.value))
+                }
               />
             </InputGroup>
             <Form.Label htmlFor="deposit">Deposit</Form.Label>
@@ -35,6 +82,9 @@ export default function MortgageCalculator() {
                 type="number"
                 className="no-spinner"
                 step="any"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setDeposit(Number(e.target.value))
+                }
               />
             </InputGroup>
 
@@ -46,6 +96,9 @@ export default function MortgageCalculator() {
                 type="number"
                 step="any"
                 defaultValue={15}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setTerm(Number(e.target.value))
+                }
               />
               <InputGroup.Text>years</InputGroup.Text>
             </InputGroup>
@@ -58,6 +111,9 @@ export default function MortgageCalculator() {
                 step="any"
                 className="no-spinner"
                 defaultValue={5.25}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setInterestRate(Number(e.target.value))
+                }
               />
               <InputGroup.Text>%</InputGroup.Text>
             </InputGroup>
@@ -72,23 +128,25 @@ export default function MortgageCalculator() {
             <tbody>
               <tr className="border-b border-t">
                 <td>Monthly Payment</td>
-                <td className="text-right">{formatCurrency(763.68)}</td>
+                <td className="text-right">{formatCurrency(monthlyPayment)}</td>
               </tr>
               <tr className="border-b">
                 <td>Total Repayment</td>
-                <td className="text-right">{formatCurrency(137463.09)}</td>
+                <td className="text-right">{formatCurrency(totalRepayment)}</td>
               </tr>
               <tr className="border-b">
                 <td>Capital</td>
-                <td className="text-right">{formatCurrency(95000)}</td>
+                <td className="text-right">{formatCurrency(capital)}</td>
               </tr>
               <tr className="border-b">
                 <td>Interest</td>
-                <td className="text-right">{formatCurrency(42463.09)}</td>
+                <td className="text-right">{formatCurrency(interest)}</td>
               </tr>
               <tr className="border-b">
                 <td>Affordability check</td>
-                <td className="text-right">{formatCurrency(921.63)}</td>
+                <td className="text-right">
+                  {formatCurrency(affordabilityCheck)}
+                </td>
               </tr>
             </tbody>
           </Table>
@@ -104,6 +162,8 @@ export default function MortgageCalculator() {
               </tr>
             </thead>
             <tbody>
+              {/* TODO: */}
+              {/* map through the array of remaining balance and display the results in table */}
               <tr>
                 <td>1</td>
                 <td>{formatCurrency(10000)}</td>
