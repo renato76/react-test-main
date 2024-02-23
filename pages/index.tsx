@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Container from 'react-bootstrap/Container'
@@ -6,6 +6,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import InputGroup from 'react-bootstrap/InputGroup'
 import Table from 'react-bootstrap/Table'
+import * as Papa from 'papaparse'
 
 import { formatCurrency } from '../utils/formatCurrency'
 import { calculateMonthlyPayment } from '../utils/MortgageCalculator/calculateRepayment'
@@ -17,10 +18,14 @@ interface RemainingBalance {
   balance: number
 }
 
-export default function MortgageCalculator() {
+interface BaseRate {
+  baseRate: number
+}
+
+export const MortgageCalculator: React.FC<BaseRate> = ({ baseRate }) => {
   const [propertyPrice, setPropertyPrice] = useState(0)
   const [deposit, setDeposit] = useState(0)
-  const [interestRate, setInterestRate] = useState(5.25)
+  const [interestRate, setInterestRate] = useState(baseRate)
   const [term, setTerm] = useState(15)
   const [monthlyPayment, setMonthlyPayment] = useState(0)
   const [totalRepayment, setTotalRepayment] = useState(0)
@@ -49,10 +54,6 @@ export default function MortgageCalculator() {
 
     setCapital(propertyPrice - deposit)
 
-    setInterest(totalRepayment - capital)
-
-    setAffordabilityInterestRate(interestRate + 3)
-
     const affordability = calculateMonthlyPayment(
       propertyPrice,
       deposit,
@@ -70,6 +71,11 @@ export default function MortgageCalculator() {
     )
     setRemainingBalance(remaining)
   }
+
+  useEffect(() => {
+    setAffordabilityInterestRate(interestRate + 3)
+    setInterest(totalRepayment - capital)
+  }, [totalRepayment, capital, interestRate])
 
   return (
     <Container>
@@ -128,7 +134,7 @@ export default function MortgageCalculator() {
                 type="number"
                 step="any"
                 className="no-spinner"
-                defaultValue={5.25}
+                defaultValue={baseRate}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setInterestRate(Number(e.target.value))
                 }
@@ -197,3 +203,28 @@ export default function MortgageCalculator() {
     </Container>
   )
 }
+
+export async function getServerSideProps() {
+  try {
+    const response = await fetch(
+      'https://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&Datefrom=18/Jan/2024&Dateto=18/Feb/2024&SeriesCodes=IUMABEDR&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N'
+    )
+    const baseRateData = await response.text()
+    const baseRateParsed = Papa.parse(baseRateData).data[1]
+    const baseRate = baseRateParsed[1]
+    return {
+      props: {
+        baseRate,
+      },
+    }
+  } catch (error) {
+    console.error('Error fetching base rate:', error)
+    return {
+      props: {
+        baseRate: null,
+      },
+    }
+  }
+}
+
+export default MortgageCalculator
