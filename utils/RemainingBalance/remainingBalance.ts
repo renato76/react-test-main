@@ -1,41 +1,45 @@
 export function calculateRemainingBalance(
-  interestRate: number,
   mortgageAmount: number,
-  years: number
+  interestRate: number,
+  term: number
 ) {
-  // Convert interest rate from percentage to decimal
-  interestRate /= 100
-
-  // Monthly interest rate
-  const monthlyRate = interestRate / 12
-
-  // Total number of payments
-  const totalPayments = years * 12
-
-  // Calculate monthly payment using formula for fixed-rate mortgage
+  const monthlyInterestRate = interestRate / 12 / 100
+  const totalPayments = term * 12
   const monthlyPayment =
-    (mortgageAmount * monthlyRate) /
-    (1 - Math.pow(1 + monthlyRate, -totalPayments))
+    (mortgageAmount *
+      (monthlyInterestRate *
+        Math.pow(1 + monthlyInterestRate, totalPayments))) /
+    (Math.pow(1 + monthlyInterestRate, totalPayments) - 1)
 
   let remainingBalance = mortgageAmount
-  let balanceHistory = []
+  const balanceByYear = []
 
-  for (let i = 1; i <= years; i++) {
-    // Calculate interest paid for the year
-    const interestPaid = remainingBalance * monthlyRate * 12
+  for (let year = 1; year <= term; year++) {
+    let yearlyInterestPaid = 0
+    let yearlyPrincipalPaid = 0
 
-    // Calculate principal paid for the year
-    const principalPaid = monthlyPayment * 12 - interestPaid
+    for (let month = 1; month <= 12; month++) {
+      const interestPayment = remainingBalance * monthlyInterestRate
+      const principalPayment = monthlyPayment - interestPayment
 
-    // Calculate remaining balance after the year
-    remainingBalance -= principalPaid
+      // Adjust the remaining balance
+      remainingBalance -= principalPayment
 
-    // Store remaining balance for the year
-    balanceHistory.push({
-      year: i,
-      balance: remainingBalance,
+      // Update yearly totals
+      yearlyInterestPaid += interestPayment
+      yearlyPrincipalPaid += principalPayment
+
+      // Break if remaining balance is less than or equal to 0
+      if (remainingBalance <= 0) {
+        break
+      }
+    }
+
+    balanceByYear.push({
+      year: year,
+      balance: +remainingBalance.toFixed(0),
     })
   }
 
-  return balanceHistory
+  return balanceByYear
 }

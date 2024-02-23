@@ -8,9 +8,14 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import Table from 'react-bootstrap/Table'
 
 import { formatCurrency } from '../utils/formatCurrency'
-
 import { calculateMonthlyPayment } from '../utils/MortgageCalculator/calculateRepayment'
 import { calculateTotalRepayment } from '../utils/TotalRepayment/totalRepayment'
+import { calculateRemainingBalance } from '../utils/RemainingBalance/remainingBalance'
+
+interface RemainingBalance {
+  year: number
+  balance: number
+}
 
 export default function MortgageCalculator() {
   const [propertyPrice, setPropertyPrice] = useState(0)
@@ -23,6 +28,10 @@ export default function MortgageCalculator() {
   const [interest, setInterest] = useState(0)
   const [affordabilityInterestRate, setAffordabilityInterestRate] = useState(0)
   const [affordabilityCheck, setAffordabilityCheck] = useState(0)
+  const [remainingBalance, setRemainingBalance] = useState<RemainingBalance[]>(
+    []
+  )
+  const [initialBalance, setInitialBalance] = useState(0)
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -32,7 +41,7 @@ export default function MortgageCalculator() {
       interestRate,
       term
     )
-    setMonthlyPayment(monthlyPayment)
+    setMonthlyPayment(+monthlyPayment)
 
     const mortgageAmount = propertyPrice - deposit
     const total = calculateTotalRepayment(mortgageAmount, interestRate, term)
@@ -51,6 +60,15 @@ export default function MortgageCalculator() {
       term
     )
     setAffordabilityCheck(affordability)
+
+    setInitialBalance(propertyPrice - deposit)
+
+    const remaining = calculateRemainingBalance(
+      mortgageAmount,
+      interestRate,
+      term
+    )
+    setRemainingBalance(remaining)
   }
 
   return (
@@ -162,12 +180,16 @@ export default function MortgageCalculator() {
               </tr>
             </thead>
             <tbody>
-              {/* TODO: */}
-              {/* map through the array of remaining balance and display the results in table */}
               <tr>
-                <td>1</td>
-                <td>{formatCurrency(10000)}</td>
+                <td>Year 0</td>
+                <td>{formatCurrency(initialBalance || 0, 0)}</td>
               </tr>
+              {remainingBalance.map((item) => (
+                <tr key={item.year}>
+                  <td>Year {item.year}</td>
+                  <td>{formatCurrency(item.balance, 0)}</td>
+                </tr>
+              ))}
             </tbody>
           </Table>
         </Col>
