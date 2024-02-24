@@ -210,7 +210,7 @@ export async function getServerSideProps() {
       'https://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&Datefrom=18/Jan/2024&Dateto=18/Feb/2024&SeriesCodes=IUMABEDR&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N'
     )
     const baseRateData = await response.text()
-    const baseRateParsed = Papa.parse(baseRateData).data[1]
+    const baseRateParsed = Papa.parse(baseRateData).data[1] as ''[]
     const baseRate = baseRateParsed[1]
     return {
       props: {
