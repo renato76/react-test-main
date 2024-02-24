@@ -13,16 +13,18 @@ import { calculateMonthlyPayment } from '../utils/MortgageCalculator/calculateRe
 import { calculateTotalRepayment } from '../utils/TotalRepayment/totalRepayment'
 import { calculateRemainingBalance } from '../utils/RemainingBalance/remainingBalance'
 
-interface RemainingBalance {
+interface RemainingBalanceProps {
   year: number
   balance: number
 }
 
-interface BaseRate {
+interface MortgageCalculatorProps {
   baseRate: number
 }
 
-export const MortgageCalculator: React.FC<BaseRate> = ({ baseRate }) => {
+export const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({
+  baseRate,
+}) => {
   const [propertyPrice, setPropertyPrice] = useState(0)
   const [deposit, setDeposit] = useState(0)
   const [interestRate, setInterestRate] = useState(baseRate)
@@ -33,9 +35,9 @@ export const MortgageCalculator: React.FC<BaseRate> = ({ baseRate }) => {
   const [interest, setInterest] = useState(0)
   const [affordabilityInterestRate, setAffordabilityInterestRate] = useState(0)
   const [affordabilityCheck, setAffordabilityCheck] = useState(0)
-  const [remainingBalance, setRemainingBalance] = useState<RemainingBalance[]>(
-    []
-  )
+  const [remainingBalance, setRemainingBalance] = useState<
+    RemainingBalanceProps[]
+  >([])
   const [initialBalance, setInitialBalance] = useState(0)
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
