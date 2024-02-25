@@ -15,19 +15,12 @@ export function calculateRemainingBalance(
   const balanceByYear = []
 
   for (let year = 1; year <= term; year++) {
-    let yearlyInterestPaid = 0
-    let yearlyPrincipalPaid = 0
-
     for (let month = 1; month <= 12; month++) {
       const interestPayment = remainingBalance * monthlyInterestRate
       const principalPayment = monthlyPayment - interestPayment
 
       // Adjust the remaining balance
       remainingBalance -= principalPayment
-
-      // Update yearly totals
-      yearlyInterestPaid += interestPayment
-      yearlyPrincipalPaid += principalPayment
 
       // Break if remaining balance is less than or equal to 0
       if (remainingBalance <= 0) {
